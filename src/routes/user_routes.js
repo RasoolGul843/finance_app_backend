@@ -8,6 +8,12 @@ const {
     resetPassword,
 } = require("../controllers/user_controller");
 
+// Debug route
+router.get("/register", (req, res) => {
+    res.send("Register route working (GET)");
+});
+
+// Actual routes
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/forgot-password", forgotPassword);
