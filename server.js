@@ -6,24 +6,34 @@ dotenv.config();
 
 const connectDB = require("./src/config/db");
 
-// Connect DB
 connectDB();
 
 const app = express();
 
-// Middlewares
+// SECURITY + STABILITY MIDDLEWARE
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
 
-// Routes
+// LOG ALL REQUESTS (DEBUG)
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+});
+
+// ROUTES
 app.use("/api/users", require("./src/routes/user_routes"));
 
-// Test route
 app.get("/", (req, res) => {
     res.send("API is running...");
 });
 
-// Start server
+// GLOBAL ERROR HANDLER (VERY IMPORTANT)
+app.use((err, req, res, next) => {
+    console.error("GLOBAL ERROR:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {

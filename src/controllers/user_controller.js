@@ -2,12 +2,19 @@ const User = require("../models/user_model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const sendEmail = require("../utils/send_email");
 
-// REGISTER
+// REGISTER (SAFE)
 const registerUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        console.log("BODY:", req.body);
+
+        const name = req.body?.name;
+        const email = req.body?.email;
+        const password = req.body?.password;
+
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: "All fields required" });
+        }
 
         const exist = await User.findOne({ email });
         if (exist) {
@@ -22,16 +29,22 @@ const registerUser = async (req, res) => {
             password: hashed,
         });
 
-        res.status(201).json({ message: "Registered successfully", user });
+        return res.status(201).json({
+            message: "Registered successfully",
+            user,
+        });
+
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error("REGISTER ERROR:", err);
+        return res.status(500).json({ message: err.message });
     }
 };
 
 // LOGIN
 const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const email = req.body?.email;
+        const password = req.body?.password;
 
         const user = await User.findOne({ email });
         if (!user) return res.status(400).json({ message: "Invalid email" });
@@ -39,21 +52,30 @@ const loginUser = async (req, res) => {
         const match = await bcrypt.compare(password, user.password);
         if (!match) return res.status(400).json({ message: "Invalid password" });
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-            expiresIn: "7d",
-        });
+        if (!process.env.JWT_SECRET) {
+            return res.status(500).json({ message: "JWT_SECRET missing" });
+        }
 
-        res.json({ token, user });
+        const token = jwt.sign(
+            { id: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
+        return res.json({ token, user });
+
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error("LOGIN ERROR:", err);
+        return res.status(500).json({ message: err.message });
     }
 };
 
-// FORGOT PASSWORD
+// FORGOT PASSWORD (SAFE)
 const forgotPassword = async (req, res) => {
     try {
-        const user = await User.findOne({ email: req.body.email });
+        const email = req.body?.email;
 
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -69,19 +91,14 @@ const forgotPassword = async (req, res) => {
 
         await user.save({ validateBeforeSave: false });
 
-        const resetUrl = `http://localhost:3000/api/users/reset-password/${resetToken}`;
-
-        console.log("RESET URL:", resetUrl);
-
-        await sendEmail({
-            email: user.email,
-            subject: "Password Reset",
-            message: resetUrl,
+        return res.json({
+            message: "Reset link generated",
+            resetUrl: `https://finance-app-eu5v.onrender.com/api/users/reset-password/${resetToken}`,
         });
 
-        res.json({ message: "Reset link sent" });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error("FORGOT ERROR:", err);
+        return res.status(500).json({ message: err.message });
     }
 };
 
@@ -108,9 +125,11 @@ const resetPassword = async (req, res) => {
 
         await user.save({ validateBeforeSave: false });
 
-        res.json({ message: "Password reset success" });
+        return res.json({ message: "Password reset success" });
+
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error("RESET ERROR:", err);
+        return res.status(500).json({ message: err.message });
     }
 };
 
