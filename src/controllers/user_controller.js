@@ -95,10 +95,9 @@ const updateProfile = async (req, res) => {
         if (email) user.email = email;
         if (phone) user.phone = phone;
 
-        // ✅ FIXED IMAGE URL LOGIC
+        // ✅ IMAGE UPLOAD FIX (FULL URL)
         if (req.file) {
-            const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-            user.profileImage = imageUrl;
+            user.profileImage = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
         }
 
         await user.save();

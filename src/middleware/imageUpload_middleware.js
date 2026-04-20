@@ -2,7 +2,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// ✅ create uploads folder automatically
+// create uploads folder if not exists
 const uploadDir = "uploads/";
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
@@ -21,7 +21,7 @@ const fileFilter = (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) {
         cb(null, true);
     } else {
-        cb(new Error("Only image files are allowed"), false);
+        cb(new Error("Only image files allowed"), false);
     }
 };
 
