@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
 // REGISTER
-exports.registerUser = async (req, res) => {
+const registerUser = async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
