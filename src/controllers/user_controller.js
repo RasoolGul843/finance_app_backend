@@ -81,6 +81,8 @@ const getUserProfile = async (req, res) => {
 
 
 // UPDATE PROFILE
+
+// UPDATE PROFILE
 const updateProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
@@ -95,16 +97,23 @@ const updateProfile = async (req, res) => {
         if (email) user.email = email;
         if (phone) user.phone = phone;
 
+        // ✅ profile image
+        if (req.file) {
+            user.profileImage = `/uploads/${req.file.filename}`;
+        }
+
         await user.save();
 
         return res.json({
-            message: "Profile updated",
+            message: "Profile updated successfully",
             user,
         });
+
     } catch (err) {
         return res.status(500).json({ message: err.message });
     }
 };
+
 
 
 // FORGOT PASSWORD
@@ -175,4 +184,6 @@ module.exports = {
     forgotPassword,
     resetPassword,
     getUserProfile,
+    updateProfile,
+
 };

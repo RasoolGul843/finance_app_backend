@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const path = require("path");
 
 dotenv.config();
 
@@ -9,14 +10,18 @@ connectDB();
 
 const app = express();
 
+// middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ROUTES
+// ✅ serve uploaded images
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// routes
 app.use("/api/users", require("./src/routes/user_routes"));
 
-// TEST ROUTE
+// test route
 app.get("/", (req, res) => {
     res.send("API is running...");
 });

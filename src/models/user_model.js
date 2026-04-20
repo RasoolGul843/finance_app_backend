@@ -39,13 +39,7 @@ const userSchema = new mongoose.Schema(
 
         profileImage: {
             type: String,
-            default: null,
-            validate: {
-                validator: function (v) {
-                    return !v || /^https?:\/\/.+/.test(v);
-                },
-                message: "Invalid image URL",
-            },
+            default: "",
         },
 
         resetPasswordToken: String,

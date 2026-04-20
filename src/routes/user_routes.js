@@ -11,14 +11,22 @@ const {
 } = require("../controllers/user_controller");
 
 const protect = require("../middleware/auth_middleware");
+const upload = require("../middleware/imageUpload_middleware");
 
-// AUTH ROUTES
+// AUTH
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 
 // PROFILE
-router.put("/update-profile", protect, updateProfile);
 router.get("/getUserData", protect, getUserProfile);
+
+// ✅ update profile with image
+router.put(
+    "/update-profile",
+    protect,
+    upload.single("profileImage"),
+    updateProfile
+);
 
 // PASSWORD
 router.post("/forgot-password", forgotPassword);
