@@ -13,8 +13,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// ROUTES
 app.use("/api/users", require("./src/routes/user_routes"));
 
+// TEST ROUTE
 app.get("/", (req, res) => {
     res.send("API is running...");
 });
