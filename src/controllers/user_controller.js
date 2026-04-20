@@ -190,5 +190,5 @@ module.exports = {
     updateProfile,
     forgotPassword,
     resetPassword,
-    getUserProfile, // ✅ add this
+    getUserProfile,
 };
