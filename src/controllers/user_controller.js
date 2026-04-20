@@ -81,8 +81,6 @@ const getUserProfile = async (req, res) => {
 
 
 // UPDATE PROFILE
-
-// UPDATE PROFILE
 const updateProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
@@ -97,9 +95,10 @@ const updateProfile = async (req, res) => {
         if (email) user.email = email;
         if (phone) user.phone = phone;
 
-        // ✅ profile image
+        // ✅ FIXED IMAGE URL LOGIC
         if (req.file) {
-            user.profileImage = `/uploads/${req.file.filename}`;
+            const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+            user.profileImage = imageUrl;
         }
 
         await user.save();
@@ -113,7 +112,6 @@ const updateProfile = async (req, res) => {
         return res.status(500).json({ message: err.message });
     }
 };
-
 
 
 // FORGOT PASSWORD
