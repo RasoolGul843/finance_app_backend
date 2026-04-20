@@ -4,12 +4,16 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
 // REGISTER
-const registerUser = async (req, res) => {
+exports.registerUser = async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
         if (!name || !email || !password) {
             return res.status(400).json({ message: "All fields required" });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ message: "Password must be at least 6 characters" });
         }
 
         const exist = await User.findOne({ email });
@@ -25,12 +29,13 @@ const registerUser = async (req, res) => {
             password: hashed,
         });
 
+        user.password = undefined;
+
         return res.status(201).json({
-            message: "Registered successfully",
+            message: "Registered successfully. Please login.",
             user,
         });
     } catch (err) {
-        console.error("REGISTER ERROR:", err);
         return res.status(500).json({ message: err.message });
     }
 };
@@ -100,6 +105,27 @@ const updateProfile = async (req, res) => {
     }
 };
 
+// GET CURRENT USER PROFILE ✅
+const getUserProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const user = await User.findById(userId).select("-password");
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        return res.json({
+            message: "User fetched successfully",
+            user,
+        });
+    } catch (err) {
+        console.error("GET PROFILE ERROR:", err);
+        return res.status(500).json({ message: err.message });
+    }
+};
+
 // FORGOT PASSWORD
 const forgotPassword = async (req, res) => {
     try {
@@ -164,4 +190,5 @@ module.exports = {
     updateProfile,
     forgotPassword,
     resetPassword,
+    getUserProfile, // ✅ add this
 };
