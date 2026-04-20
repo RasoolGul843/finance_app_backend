@@ -4,18 +4,16 @@ const router = express.Router();
 const {
     registerUser,
     loginUser,
+    updateProfile,
     forgotPassword,
     resetPassword,
 } = require("../controllers/user_controller");
 
-// Debug route
-router.get("/register", (req, res) => {
-    res.send("Register route working (GET)");
-});
+const protect = require("../middleware/auth_middleware");
 
-// Actual routes
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+router.put("/update-profile", protect, updateProfile);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
 

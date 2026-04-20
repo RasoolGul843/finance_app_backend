@@ -3,14 +3,10 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
-// REGISTER (SAFE)
+// REGISTER
 const registerUser = async (req, res) => {
     try {
-        console.log("BODY:", req.body);
-
-        const name = req.body?.name;
-        const email = req.body?.email;
-        const password = req.body?.password;
+        const { name, email, password } = req.body;
 
         if (!name || !email || !password) {
             return res.status(400).json({ message: "All fields required" });
@@ -33,7 +29,6 @@ const registerUser = async (req, res) => {
             message: "Registered successfully",
             user,
         });
-
     } catch (err) {
         console.error("REGISTER ERROR:", err);
         return res.status(500).json({ message: err.message });
@@ -43,42 +38,75 @@ const registerUser = async (req, res) => {
 // LOGIN
 const loginUser = async (req, res) => {
     try {
-        const email = req.body?.email;
-        const password = req.body?.password;
+        const { email, password } = req.body;
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).select("+password");
         if (!user) return res.status(400).json({ message: "Invalid email" });
 
         const match = await bcrypt.compare(password, user.password);
         if (!match) return res.status(400).json({ message: "Invalid password" });
 
-        if (!process.env.JWT_SECRET) {
-            return res.status(500).json({ message: "JWT_SECRET missing" });
-        }
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+            expiresIn: "7d",
+        });
 
-        const token = jwt.sign(
-            { id: user._id },
-            process.env.JWT_SECRET,
-            { expiresIn: "7d" }
-        );
+        user.password = undefined;
 
         return res.json({ token, user });
-
     } catch (err) {
         console.error("LOGIN ERROR:", err);
         return res.status(500).json({ message: err.message });
     }
 };
 
-// FORGOT PASSWORD (SAFE)
+// UPDATE PROFILE ✅
+const updateProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { name, email, phone } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        // email check
+        if (email && email !== user.email) {
+            const emailExist = await User.findOne({ email });
+            if (emailExist) {
+                return res.status(400).json({ message: "Email already in use" });
+            }
+            user.email = email;
+        }
+
+        // phone check
+        if (phone && phone !== user.phone) {
+            const phoneExist = await User.findOne({ phone });
+            if (phoneExist) {
+                return res.status(400).json({ message: "Phone already in use" });
+            }
+            user.phone = phone;
+        }
+
+        if (name) user.name = name;
+
+        await user.save();
+
+        return res.json({
+            message: "Profile updated successfully",
+            user,
+        });
+    } catch (err) {
+        console.error("UPDATE ERROR:", err);
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+// FORGOT PASSWORD
 const forgotPassword = async (req, res) => {
     try {
-        const email = req.body?.email;
+        const { email } = req.body;
 
         const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
+        if (!user) return res.status(404).json({ message: "User not found" });
 
         const resetToken = crypto.randomBytes(20).toString("hex");
 
@@ -93,9 +121,8 @@ const forgotPassword = async (req, res) => {
 
         return res.json({
             message: "Reset link generated",
-            resetUrl: `https://finance-app-eu5v.onrender.com/api/users/reset-password/${resetToken}`,
+            resetUrl: `http://localhost:3000/api/users/reset-password/${resetToken}`,
         });
-
     } catch (err) {
         console.error("FORGOT ERROR:", err);
         return res.status(500).json({ message: err.message });
@@ -115,9 +142,8 @@ const resetPassword = async (req, res) => {
             resetPasswordExpire: { $gt: Date.now() },
         });
 
-        if (!user) {
+        if (!user)
             return res.status(400).json({ message: "Invalid or expired token" });
-        }
 
         user.password = await bcrypt.hash(req.body.password, 10);
         user.resetPasswordToken = undefined;
@@ -126,7 +152,6 @@ const resetPassword = async (req, res) => {
         await user.save({ validateBeforeSave: false });
 
         return res.json({ message: "Password reset success" });
-
     } catch (err) {
         console.error("RESET ERROR:", err);
         return res.status(500).json({ message: err.message });
@@ -136,6 +161,7 @@ const resetPassword = async (req, res) => {
 module.exports = {
     registerUser,
     loginUser,
+    updateProfile,
     forgotPassword,
     resetPassword,
 };
