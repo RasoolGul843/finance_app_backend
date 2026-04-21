@@ -9,7 +9,7 @@ const {
     deleteCategory,
 } = require("../controllers/category_controller");
 
-// Custom named routes
+// ROUTES
 router.post("/create", createCategory);
 router.get("/all", getCategories);
 router.get("/get/:id", getCategoryById);

@@ -1,7 +1,7 @@
 const Category = require("../models/category_model");
 
-// Create Category
-exports.createCategory = async (req, res) => {
+// CREATE CATEGORY
+const createCategory = async (req, res) => {
     try {
         const { name, icon, color } = req.body;
 
@@ -12,15 +12,20 @@ exports.createCategory = async (req, res) => {
             });
         }
 
-        const category = new Category({ name, icon, color });
+        const category = new Category({
+            name,
+            icon,
+            color,
+        });
+
         await category.save();
 
         res.status(201).json({
             success: true,
-            message: "Category created successfully",
             data: category,
         });
     } catch (error) {
+        console.log("ERROR:", error);
         res.status(500).json({
             success: false,
             message: "Error creating category",
@@ -29,25 +34,22 @@ exports.createCategory = async (req, res) => {
     }
 };
 
-// Get All Categories
-exports.getCategories = async (req, res) => {
+// GET ALL
+const getCategories = async (req, res) => {
     try {
-        const categories = await Category.find().sort({ createdAt: -1 });
+        const categories = await Category.find();
 
-        res.status(200).json({
+        res.json({
             success: true,
             data: categories,
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error fetching categories",
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// Get Single Category
-exports.getCategoryById = async (req, res) => {
+// GET BY ID
+const getCategoryById = async (req, res) => {
     try {
         const category = await Category.findById(req.params.id);
 
@@ -58,51 +60,36 @@ exports.getCategoryById = async (req, res) => {
             });
         }
 
-        res.status(200).json({
-            success: true,
-            data: category,
-        });
+        res.json({ success: true, data: category });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error fetching category",
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// Update Category
-exports.updateCategory = async (req, res) => {
+// UPDATE
+const updateCategory = async (req, res) => {
     try {
-        const { name, icon, color } = req.body;
-
-        const updatedCategory = await Category.findByIdAndUpdate(
+        const updated = await Category.findByIdAndUpdate(
             req.params.id,
-            { name, icon, color },
-            { new: true, runValidators: true }
+            req.body,
+            { new: true }
         );
 
-        if (!updatedCategory) {
+        if (!updated) {
             return res.status(404).json({
                 success: false,
                 message: "Category not found",
             });
         }
 
-        res.status(200).json({
-            success: true,
-            message: "Category updated",
-            data: updatedCategory,
-        });
+        res.json({ success: true, data: updated });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error updating category",
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// Delete Category
-exports.deleteCategory = async (req, res) => {
+// DELETE
+const deleteCategory = async (req, res) => {
     try {
         const deleted = await Category.findByIdAndDelete(req.params.id);
 
@@ -113,14 +100,19 @@ exports.deleteCategory = async (req, res) => {
             });
         }
 
-        res.status(200).json({
+        res.json({
             success: true,
             message: "Category deleted",
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error deleting category",
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
+};
+
+module.exports = {
+    createCategory,
+    getCategories,
+    getCategoryById,
+    updateCategory,
+    deleteCategory,
 };
