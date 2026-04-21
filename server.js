@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const path = require("path");
 
+
 dotenv.config();
 
 const connectDB = require("./src/config/db");
@@ -20,6 +21,9 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // routes
 app.use("/api/users", require("./src/routes/user_routes"));
+
+const categoryRoutes = require("./src/routes/category_routes");
+app.use("/api/categories", categoryRoutes);
 
 // test route
 app.get("/", (req, res) => {

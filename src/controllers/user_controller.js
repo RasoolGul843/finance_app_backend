@@ -95,7 +95,9 @@ const updateProfile = async (req, res) => {
         if (email) user.email = email;
         if (phone) user.phone = phone;
 
-        // ✅ IMAGE UPLOAD FIX (FULL URL)
+        // 🔴 DEBUG: check if file exists
+        console.log("FILE RECEIVED:", req.file);
+
         if (req.file) {
             user.profileImage = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
         }
@@ -108,10 +110,10 @@ const updateProfile = async (req, res) => {
         });
 
     } catch (err) {
+        console.log(err);
         return res.status(500).json({ message: err.message });
     }
 };
-
 
 // FORGOT PASSWORD
 const forgotPassword = async (req, res) => {
