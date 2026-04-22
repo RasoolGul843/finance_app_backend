@@ -24,7 +24,7 @@ router.get("/getUserData", protect, getUserProfile);
 router.put(
     "/update-profile",
     protect,
-    upload.single("profileImage"), // MUST MATCH FRONTEND KEY
+    upload.single("profileImage"),
     updateProfile
 );
 
