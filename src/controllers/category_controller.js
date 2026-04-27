@@ -1,6 +1,8 @@
 const Category = require("../models/category_model");
 
+// ==========================
 // CREATE CATEGORY
+// ==========================
 const createCategory = async (req, res) => {
     try {
         const { name, icon, color } = req.body;
@@ -12,13 +14,11 @@ const createCategory = async (req, res) => {
             });
         }
 
-        const category = new Category({
+        const category = await Category.create({
             name,
             icon,
             color,
         });
-
-        await category.save();
 
         res.status(201).json({
             success: true,
@@ -29,12 +29,14 @@ const createCategory = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Error creating category",
-            error: error.message,
         });
     }
 };
 
-// GET ALL
+
+// ==========================
+// GET ALL CATEGORIES ✅
+// ==========================
 const getCategories = async (req, res) => {
     try {
         const categories = await Category.find();
@@ -44,11 +46,17 @@ const getCategories = async (req, res) => {
             data: categories,
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
     }
 };
 
-// GET BY ID
+
+// ==========================
+// GET CATEGORY BY ID
+// ==========================
 const getCategoryById = async (req, res) => {
     try {
         const category = await Category.findById(req.params.id);
@@ -60,13 +68,22 @@ const getCategoryById = async (req, res) => {
             });
         }
 
-        res.json({ success: true, data: category });
+        res.json({
+            success: true,
+            data: category,
+        });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
     }
 };
 
-// UPDATE
+
+// ==========================
+// UPDATE CATEGORY
+// ==========================
 const updateCategory = async (req, res) => {
     try {
         const updated = await Category.findByIdAndUpdate(
@@ -82,13 +99,22 @@ const updateCategory = async (req, res) => {
             });
         }
 
-        res.json({ success: true, data: updated });
+        res.json({
+            success: true,
+            data: updated,
+        });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
     }
 };
 
-// DELETE
+
+// ==========================
+// DELETE CATEGORY
+// ==========================
 const deleteCategory = async (req, res) => {
     try {
         const deleted = await Category.findByIdAndDelete(req.params.id);
@@ -105,13 +131,20 @@ const deleteCategory = async (req, res) => {
             message: "Category deleted",
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
     }
 };
 
+
+// ==========================
+// EXPORT ALL FUNCTIONS ✅
+// ==========================
 module.exports = {
     createCategory,
-    getCategories,
+    getCategories, // ✅ now defined
     getCategoryById,
     updateCategory,
     deleteCategory,

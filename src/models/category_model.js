@@ -5,10 +5,9 @@ const categorySchema = new mongoose.Schema(
         name: {
             type: String,
             required: true,
-            trim: true,
         },
         icon: {
-            type: String,
+            type: String, // ✅ URL will be stored here
             required: true,
         },
         color: {
